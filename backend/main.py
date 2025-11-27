@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from uuid import uuid4   # 👈 for generating unique session IDs
+from uuid import uuid4   # for generating unique session IDs
 
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,8 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- Models ----------
-
+#Models 
 class ChatRequest(BaseModel):
     # session_id is now OPTIONAL
     session_id: Optional[str] = None
@@ -32,7 +31,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    session_id: str   # 👈 always return the session_id in response
+    session_id: str   
 
 
 class ChatHistoryItem(BaseModel):
@@ -47,8 +46,7 @@ class ChatHistoryItem(BaseModel):
 CHAT_HISTORY: List[ChatHistoryItem] = []
 
 
-# ---------- Router for chat-related endpoints ----------
-
+#Router for chat-related endpoints 
 chat_router = APIRouter(
     prefix="",      # endpoints stay as /chat and /history
     tags=["chat"],
@@ -64,17 +62,17 @@ async def chat_endpoint(request: ChatRequest):
     - Store this turn in CHAT_HISTORY
     - Return reply + session_id
     """
-    # 1) Decide session_id
+    #Decide session_id
     if request.session_id:
         session_id = request.session_id
     else:
         # create new session id if not provided
         session_id = "session-" + uuid4().hex[:8]
 
-    # 2) Call chatbot core
+    #Call chatbot core
     reply_text, tools_used = get_reply(request.message)
 
-    # 3) Save to history
+    #Save to history
     history_item = ChatHistoryItem(
         session_id=session_id,
         user_query=request.message,
@@ -84,7 +82,7 @@ async def chat_endpoint(request: ChatRequest):
     )
     CHAT_HISTORY.append(history_item)
 
-    # 4) Return reply + session_id
+    #Return reply + session_id
     return ChatResponse(reply=reply_text, session_id=session_id)
 
 
