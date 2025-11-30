@@ -163,21 +163,25 @@ agent = initialize_agent(
 # Function used by FastAPI
 def get_reply(user_message: str):
     """
-    Main function called by FastAPI.
-    Returns:
-      - reply: str         -> AI response
-      - tools_used: list   -> list of tools used in this turn
+    Gets the AI reply and tracks which tools were used.
     """
-    try:
-        # clear previous run's tools
-        LAST_USED_TOOLS.clear()
+    
+    # Reset tool list for this new message
+    LAST_USED_TOOLS.clear()
 
+    try:
+        # Ask the agent to generate a reply
         reply = agent.run(user_message)
 
-        tools_used = LAST_USED_TOOLS.copy()
-        LAST_USED_TOOLS.clear()
-    except Exception as e:
-        reply = f"Sorry, something went wrong while generating a response: {e}"
+        # Save tools used for this message
+        tools_used = list(LAST_USED_TOOLS)
+
+    except Exception:
+        # In case something goes wrong
+        reply = "Sorry, I could not process your message."
         tools_used = []
+
+    # Clear tools for the next message
+    LAST_USED_TOOLS.clear()
 
     return reply, tools_used
